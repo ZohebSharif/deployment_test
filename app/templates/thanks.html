@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block title %}Thanks{% endblock %}
+{% block content %}
+<h1>Thanks for responding!</h1>
+<p>You replied <strong>{{ response }}</strong> to <strong>{{ event.name }}</strong>.</p>
+<p><a href="/rsvp/{{ event.slug }}">Change your response</a></p>
+{% endblock %}

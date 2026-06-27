@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Create an event{% endblock %}
+{% block content %}
+<h1>Create an event</h1>
+{% if error %}<p class="error">{{ error }}</p>{% endif %}
+<form method="post" action="/events">
+    <label for="name">Event name</label>
+    <input type="text" id="name" name="name" required autofocus>
+    <button type="submit">Create event</button>
+</form>
+{% endblock %}

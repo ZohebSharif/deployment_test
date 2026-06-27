@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Event created{% endblock %}
+{% block content %}
+<h1>Event created: {{ name }}</h1>
+
+<p>Share this link so people can RSVP:</p>
+<p class="link-box">{{ request.base_url }}rsvp/{{ slug }}</p>
+
+<p>View responses (keep this private):</p>
+<p class="link-box">{{ request.base_url }}events/{{ slug }}/responses</p>
+
+<p><a href="/">Create another event</a></p>
+{% endblock %}

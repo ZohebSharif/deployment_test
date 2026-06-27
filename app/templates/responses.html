@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Responses: {{ event.name }}{% endblock %}
+{% block content %}
+<h1>Responses: {{ event.name }}</h1>
+
+<p class="summary">
+    <span><strong>{{ counts.Yes }}</strong> Yes</span>
+    <span><strong>{{ counts.Maybe }}</strong> Maybe</span>
+    <span><strong>{{ counts.No }}</strong> No</span>
+    <span>({{ rsvps|length }} total)</span>
+</p>
+
+{% if rsvps %}
+<table>
+    <thead>
+        <tr><th>Name</th><th>Response</th><th>Phone</th><th>When</th></tr>
+    </thead>
+    <tbody>
+        {% for r in rsvps %}
+        <tr>
+            <td>{{ r.name }}</td>
+            <td>{{ r.response }}</td>
+            <td>{{ r.phone or '—' }}</td>
+            <td>{{ r.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>No responses yet.</p>
+{% endif %}
+{% endblock %}
