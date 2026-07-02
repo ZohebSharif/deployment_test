@@ -15,6 +15,9 @@ def _connection_kwargs():
         "user": os.environ.get("DB_USER", "postgres"),
         "password": os.environ.get("DB_PASSWORD", ""),
         "dbname": os.environ.get("DB_NAME", "rsvp"),
+        # "require" for RDS/prod; local dev defaults to "prefer" so the
+        # non-SSL postgres container still connects.
+        "sslmode": os.environ.get("DB_SSLMODE", "prefer"),
     }
 
 
