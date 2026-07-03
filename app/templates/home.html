@@ -1,11 +1,27 @@
 {% extends "base.html" %}
-{% block title %}Create an event{% endblock %}
+{% block title %}RSVP — Who are you?{% endblock %}
 {% block content %}
-<h1>Create an event</h1>
+<p class="eyebrow">Welcome</p>
+<h1>Who are you?</h1>
+<p class="lead">Pick your name to manage your invites, or start fresh with a new one. No passwords — it's that kind of party.</p>
+
 {% if error %}<p class="error">{{ error }}</p>{% endif %}
-<form method="post" action="/events">
-    <label for="name">Event name</label>
-    <input type="text" id="name" name="name" required autofocus>
-    <button type="submit">Create event</button>
-</form>
+
+<div class="card">
+    {% if accounts %}
+    <div class="names">
+        {% for a in accounts %}
+        <form method="post" action="/login">
+            <input type="hidden" name="name" value="{{ a.name }}">
+            <button type="submit" class="chip">{{ a.name }}</button>
+        </form>
+        {% endfor %}
+    </div>
+    <div class="divider">or start fresh</div>
+    {% endif %}
+    <form method="post" action="/login" class="form-row">
+        <input type="text" name="name" placeholder="Type a new name…" aria-label="Your name" required autofocus>
+        <button type="submit" class="btn btn-primary">Continue</button>
+    </form>
+</div>
 {% endblock %}

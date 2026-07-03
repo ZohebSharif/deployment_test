@@ -1,13 +1,25 @@
 {% extends "base.html" %}
-{% block title %}Event created{% endblock %}
+{% block title %}Invite created{% endblock %}
 {% block content %}
-<h1>Event created: {{ name }}</h1>
+<p class="eyebrow">Invite created</p>
+<h1>{{ name }}</h1>
+<p class="lead">Your invite is live. Send the RSVP link to your guests.</p>
 
-<p>Share this link so people can RSVP:</p>
-<p class="link-box">{{ request.base_url }}rsvp/{{ slug }}</p>
+<div class="card">
+    <label>Share this link so people can RSVP</label>
+    <div class="link-box">
+        <a href="/rsvp/{{ slug }}">{{ request.base_url }}rsvp/{{ slug }}</a>
+        <button type="button" class="btn btn-sm btn-ghost"
+                onclick="copyLink(this, '{{ request.base_url }}rsvp/{{ slug }}')">Copy</button>
+    </div>
 
-<p>View responses (keep this private):</p>
-<p class="link-box">{{ request.base_url }}events/{{ slug }}/responses</p>
+    <label>View responses <small>(keep this one to yourself)</small></label>
+    <div class="link-box">
+        <a href="/events/{{ slug }}/responses">{{ request.base_url }}events/{{ slug }}/responses</a>
+        <button type="button" class="btn btn-sm btn-ghost"
+                onclick="copyLink(this, '{{ request.base_url }}events/{{ slug }}/responses')">Copy</button>
+    </div>
+</div>
 
-<p><a href="/">Create another event</a></p>
+<p class="back"><a class="btn btn-ghost" href="/">← Back to my invites</a></p>
 {% endblock %}

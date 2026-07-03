@@ -1,7 +1,9 @@
 # RSVP App
 
-A minimal RSVP web app: create an event, share a link, collect Yes/Maybe/No
-responses, and view them on a private dashboard.
+A minimal RSVP web app: pick a name (that's your account — no password),
+create invites, share their links, collect Yes/Maybe/No responses, and manage
+everything from your dashboard. Log out and anyone can switch to their own
+name from the list.
 
 - **Backend:** FastAPI + psycopg2 (raw SQL)
 - **Frontend:** Server-rendered Jinja2 templates
@@ -17,7 +19,8 @@ responses, and view them on a private dashboard.
 │   ├── db.py              # psycopg2 connection helper (reads env vars)
 │   └── templates/
 │       ├── base.html
-│       ├── home.html      # GET /          create-event form
+│       ├── home.html      # GET / (logged out)  account picker
+│       ├── dashboard.html # GET / (logged in)   your invites + create form
 │       ├── created.html   # shows shareable + dashboard links
 │       ├── rsvp.html      # GET /rsvp/{slug}   public RSVP form
 │       ├── thanks.html
@@ -35,21 +38,29 @@ responses, and view them on a private dashboard.
 
 ## Routes
 
-| Method | Path                        | Purpose                                  |
-|--------|-----------------------------|------------------------------------------|
-| GET    | `/`                         | Form to create a new event               |
-| POST   | `/events`                   | Creates event, generates random slug     |
-| GET    | `/rsvp/{slug}`              | Public RSVP form                         |
-| POST   | `/rsvp/{slug}`             | Saves an RSVP                            |
-| GET    | `/events/{slug}/responses` | Private dashboard of all RSVPs           |
-| GET    | `/health`                   | Returns `200 OK` for health checks       |
+| Method | Path                        | Purpose                                        |
+|--------|-----------------------------|------------------------------------------------|
+| GET    | `/`                         | Account picker (logged out) / dashboard (logged in) |
+| POST   | `/login`                    | Log in as a name, creating it if new           |
+| POST   | `/logout`                   | Clear the account cookie                       |
+| POST   | `/events`                   | Creates an invite owned by the current account |
+| POST   | `/events/{slug}/delete`    | Deletes an invite you own (and its RSVPs)      |
+| GET    | `/rsvp/{slug}`              | Public RSVP form                               |
+| POST   | `/rsvp/{slug}`             | Saves an RSVP                                  |
+| GET    | `/events/{slug}/responses` | Dashboard of all RSVPs for one invite          |
+| GET    | `/health`                   | Returns `200 OK` for health checks             |
 
 Phone is required only when the response is **Yes** or **Maybe**.
 
+"Accounts" are just names — no passwords. The current account is kept in an
+`account_id` cookie. Anyone can log in as any name; this is a toy app.
+
 ## Run with Docker (recommended)
 
-This brings up the app, PostgreSQL, and nginx together. `schema.sql` is loaded
-automatically the first time the database volume is created.
+This brings up the app, PostgreSQL, and nginx together. The app applies
+`schema.sql` automatically at startup (it's idempotent), so new tables and
+columns reach the database — local or RDS — on every deploy with no manual
+psql step.
 
 ```bash
 docker compose up --build
@@ -65,10 +76,6 @@ putting them in a `.env` file) before `up`; compose reads them as defaults.
 docker compose down        # stop
 docker compose down -v      # stop + wipe the database volume
 ```
-
-> Re-running `schema.sql` after the first boot requires removing the volume
-> (`docker compose down -v`), since Postgres only runs init scripts on a fresh
-> data directory.
 
 ## Run it locally (without Docker)
 
@@ -115,6 +122,23 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 Open http://localhost:8000 to create an event.
+
+## CI/CD (GitHub Actions → EC2)
+
+Every push builds the Docker image and smoke-tests it; pushes to `main` then
+rsync the code to the instance and run
+`docker compose -f docker-compose.prod.yml up -d --build`. See
+[.github/workflows/deploy.yml](.github/workflows/deploy.yml).
+
+One-time setup:
+
+1. **Instance**: append the deploy public key to `~/.ssh/authorized_keys`,
+   and create `~/rsvp-app/.env` with the RDS credentials (see
+   `.env.prod.example`). The security group must allow inbound 22 and 8080.
+2. **Repo secrets** (`gh secret set …`): `EC2_HOST` (public IP/DNS),
+   `EC2_USER` (e.g. `ec2-user`), `EC2_SSH_KEY` (the private key).
+
+The server's `.env` is never overwritten by a deploy.
 
 ## Health check
 
