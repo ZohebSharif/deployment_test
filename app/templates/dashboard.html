@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}{{ account.name }}'s invites{% endblock %}
+{% block header_actions %}
+<form method="post" action="/logout">
+    <button type="submit" class="btn btn-ghost btn-sm">Log out</button>
+</form>
+{% endblock %}
+{% block content %}
+<p class="eyebrow">Signed in as {{ account.name }}</p>
+<h1>Your invites</h1>
+
+{% if error %}<p class="error">{{ error }}</p>{% endif %}
+
+<div class="card">
+    <form method="post" action="/events" class="form-row">
+        <input type="text" name="name" placeholder="New event name…" aria-label="Event name" required>
+        <button type="submit" class="btn btn-primary">Create invite</button>
+    </form>
+</div>
+
+{% if events %}
+{% for e in events %}
+<div class="card">
+    <div class="invite-head">
+        <h3>{{ e.name }}</h3>
+        <span class="date">{{ e.created_at.strftime('%b %-d, %Y') }}</span>
+    </div>
+    <div class="badges">
+        <span class="badge yes">{{ e.yes }} yes</span>
+        <span class="badge maybe">{{ e.maybe }} maybe</span>
+        <span class="badge no">{{ e.no }} no</span>
+    </div>
+    <div class="invite-actions">
+        <a class="btn btn-sm" href="/rsvp/{{ e.slug }}">RSVP page</a>
+        <a class="btn btn-sm" href="/events/{{ e.slug }}/responses">Responses</a>
+        <button type="button" class="btn btn-sm btn-ghost"
+                onclick="copyLink(this, '{{ request.base_url }}rsvp/{{ e.slug }}')">Copy link</button>
+        <form method="post" action="/events/{{ e.slug }}/delete"
+              onsubmit="return confirm('Delete this invite and all of its RSVPs?');">
+            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+        </form>
+    </div>
+</div>
+{% endfor %}
+{% else %}
+<div class="card empty">🎈 No invites yet — create your first one above.</div>
+{% endif %}
+{% endblock %}

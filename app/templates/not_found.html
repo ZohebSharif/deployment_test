@@ -1,6 +1,10 @@
 {% extends "base.html" %}
 {% block title %}Not found{% endblock %}
 {% block content %}
-<h1>Event not found</h1>
-<p>That link doesn't match any event. Double-check it, or <a href="/">create a new event</a>.</p>
+<div class="card center">
+    <p class="big-emoji">🕵️</p>
+    <h1>Event not found</h1>
+    <p class="lead">That link doesn't match any event. Double-check it with whoever sent it to you.</p>
+    <p><a class="btn btn-ghost" href="/">← Go home</a></p>
+</div>
 {% endblock %}

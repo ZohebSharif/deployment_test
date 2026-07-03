@@ -1,31 +1,46 @@
 {% extends "base.html" %}
 {% block title %}RSVP: {{ event.name }}{% endblock %}
 {% block content %}
+<p class="eyebrow">You're invited</p>
 <h1>{{ event.name }}</h1>
-<p>Will you be there?</p>
+<p class="lead">Will you be there? Let them know below.</p>
 
 {% if errors %}
-<ul class="error">
-    {% for e in errors %}<li>{{ e }}</li>{% endfor %}
-</ul>
+<div class="error">
+    <ul>
+        {% for e in errors %}<li>{{ e }}</li>{% endfor %}
+    </ul>
+</div>
 {% endif %}
 
-<form method="post" action="/rsvp/{{ event.slug }}">
-    <label for="name">Your name</label>
-    <input type="text" id="name" name="name" value="{{ form.name if form else '' }}" required>
+<div class="card">
+    <form method="post" action="/rsvp/{{ event.slug }}">
+        <label for="name">Your name</label>
+        <input type="text" id="name" name="name" value="{{ form.name if form else '' }}" required autofocus>
 
-    <div class="radios">
-        <label><input type="radio" name="response" value="Yes"
-            {% if form and form.response == 'Yes' %}checked{% endif %}> Yes</label>
-        <label><input type="radio" name="response" value="Maybe"
-            {% if form and form.response == 'Maybe' %}checked{% endif %}> Maybe</label>
-        <label><input type="radio" name="response" value="No"
-            {% if form and form.response == 'No' %}checked{% endif %}> No</label>
-    </div>
+        <label>Your answer</label>
+        <div class="choices">
+            <label class="choice yes">
+                <input type="radio" name="response" value="Yes"
+                    {% if form and form.response == 'Yes' %}checked{% endif %}>
+                <span>🎉 Yes</span>
+            </label>
+            <label class="choice maybe">
+                <input type="radio" name="response" value="Maybe"
+                    {% if form and form.response == 'Maybe' %}checked{% endif %}>
+                <span>🤔 Maybe</span>
+            </label>
+            <label class="choice no">
+                <input type="radio" name="response" value="No"
+                    {% if form and form.response == 'No' %}checked{% endif %}>
+                <span>😢 No</span>
+            </label>
+        </div>
 
-    <label for="phone">Phone number <small>(required if Yes or Maybe)</small></label>
-    <input type="tel" id="phone" name="phone" value="{{ form.phone if form else '' }}">
+        <label for="phone">Phone number <small>(required if Yes or Maybe)</small></label>
+        <input type="tel" id="phone" name="phone" value="{{ form.phone if form else '' }}">
 
-    <button type="submit">Submit RSVP</button>
-</form>
+        <p><button type="submit" class="btn btn-primary">Send RSVP</button></p>
+    </form>
+</div>
 {% endblock %}

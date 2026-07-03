@@ -1,32 +1,37 @@
 {% extends "base.html" %}
 {% block title %}Responses: {{ event.name }}{% endblock %}
 {% block content %}
-<h1>Responses: {{ event.name }}</h1>
+<p class="eyebrow">Responses</p>
+<h1>{{ event.name }}</h1>
+<p class="lead">{{ rsvps|length }} response{{ '' if rsvps|length == 1 else 's' }} so far.</p>
 
-<p class="summary">
-    <span><strong>{{ counts.Yes }}</strong> Yes</span>
-    <span><strong>{{ counts.Maybe }}</strong> Maybe</span>
-    <span><strong>{{ counts.No }}</strong> No</span>
-    <span>({{ rsvps|length }} total)</span>
-</p>
+<div class="stats">
+    <div class="stat yes"><b>{{ counts.Yes }}</b><span>Yes</span></div>
+    <div class="stat maybe"><b>{{ counts.Maybe }}</b><span>Maybe</span></div>
+    <div class="stat no"><b>{{ counts.No }}</b><span>No</span></div>
+</div>
 
 {% if rsvps %}
-<table>
-    <thead>
-        <tr><th>Name</th><th>Response</th><th>Phone</th><th>When</th></tr>
-    </thead>
-    <tbody>
-        {% for r in rsvps %}
-        <tr>
-            <td>{{ r.name }}</td>
-            <td>{{ r.response }}</td>
-            <td>{{ r.phone or '—' }}</td>
-            <td>{{ r.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+<div class="card">
+    <table>
+        <thead>
+            <tr><th>Name</th><th>Response</th><th>Phone</th><th>When</th></tr>
+        </thead>
+        <tbody>
+            {% for r in rsvps %}
+            <tr>
+                <td>{{ r.name }}</td>
+                <td><span class="badge {{ r.response|lower }}">{{ r.response }}</span></td>
+                <td>{{ r.phone or '—' }}</td>
+                <td class="date">{{ r.created_at.strftime('%b %-d, %H:%M') }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
 {% else %}
-<p>No responses yet.</p>
+<div class="card empty">📭 No responses yet — share the RSVP link to get things going.</div>
 {% endif %}
+
+<p class="back"><a class="btn btn-ghost" href="/">← Back to my invites</a></p>
 {% endblock %}

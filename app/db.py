@@ -1,10 +1,14 @@
 """Database connection helpers using psycopg2 with raw SQL."""
 
 import os
+import time
 from contextlib import contextmanager
+from pathlib import Path
 
 import psycopg2
 import psycopg2.extras
+
+SCHEMA_PATH = Path(__file__).resolve().parent.parent / "schema.sql"
 
 
 def _connection_kwargs():
@@ -48,3 +52,17 @@ def ping():
     with get_cursor() as cur:
         cur.execute("SELECT 1")
         cur.fetchone()
+
+
+def apply_schema(retries=30, delay=1.0):
+    """Apply the idempotent schema.sql, waiting for the database to come up."""
+    sql = SCHEMA_PATH.read_text()
+    for attempt in range(retries):
+        try:
+            with get_cursor(commit=True) as cur:
+                cur.execute(sql)
+            return
+        except psycopg2.OperationalError:
+            if attempt == retries - 1:
+                raise
+            time.sleep(delay)

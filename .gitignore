@@ -5,3 +5,4 @@ venv/
 .env
 .env.prod
 global-bundle.pem
+.nx/

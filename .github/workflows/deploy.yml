@@ -1,0 +1,68 @@
+# CI/CD: build the image on every push/PR; deploy to EC2 on pushes to main.
+#
+# Required repo secrets (Settings → Secrets and variables → Actions):
+#   EC2_HOST     public IP or DNS of the instance
+#   EC2_USER     ssh user, e.g. ec2-user
+#   EC2_SSH_KEY  private key whose public half is in ~/.ssh/authorized_keys
+#                on the instance
+#
+# The instance keeps its own .env (RDS credentials) in ~/rsvp-app/ — the
+# deploy never touches it.
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build image
+        run: docker build -t rsvp-app .
+
+      - name: Smoke test — app imports cleanly
+        run: docker run --rm rsvp-app python -c "from app import main"
+
+  deploy:
+    needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          printf 'StrictHostKeyChecking accept-new\n' >> ~/.ssh/config
+
+      - name: Sync code to the instance
+        run: |
+          rsync -az --delete \
+            --exclude '.git' \
+            --exclude '.env' \
+            -e "ssh -i ~/.ssh/deploy_key" \
+            ./ "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:~/rsvp-app/"
+
+      - name: Rebuild and restart the stack
+        run: |
+          ssh -i ~/.ssh/deploy_key "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}" '
+            set -e
+            cd ~/rsvp-app
+            docker compose -f docker-compose.prod.yml up -d --build
+            docker image prune -f
+          '
+
+      - name: Verify the app is healthy
+        run: |
+          sleep 5
+          curl -fsS "http://${{ secrets.EC2_HOST }}:8080/health"
