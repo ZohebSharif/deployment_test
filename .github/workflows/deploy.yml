@@ -68,4 +68,4 @@ jobs:
       - name: Verify the app is healthy
         run: |
           sleep 5
-          curl -fsS "http://${{ secrets.EC2_HOST }}:8080/health"
+          curl -fsS "http://${{ secrets.EC2_HOST }}/health"
