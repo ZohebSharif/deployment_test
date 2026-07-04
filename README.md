@@ -75,8 +75,9 @@ psql step.
 docker compose up --build
 ```
 
-Then open **http://localhost:8080** (nginx). The app itself isn't published to
-the host — all traffic goes through nginx, matching a typical deployment.
+Then open **http://localhost** (nginx on port 80). The app itself isn't
+published to the host — all traffic goes through nginx, matching a typical
+deployment.
 
 Override credentials by exporting `DB_USER` / `DB_PASSWORD` / `DB_NAME` (or
 putting them in a `.env` file) before `up`; compose reads them as defaults.
@@ -152,7 +153,7 @@ One-time setup:
 
 1. **Instance**: append the deploy public key to `~/.ssh/authorized_keys`,
    and create `~/deployment_test/.env` with the RDS credentials (see
-   `.env.prod.example`). The security group must allow inbound 22 and 8080.
+   `.env.prod.example`). The security group must allow inbound 22 and 80.
 2. **Repo secrets** (`gh secret set …`): `EC2_HOST` (public IP/DNS),
    `EC2_USER` (e.g. `ec2-user`), `EC2_SSH_KEY` (the private key).
 

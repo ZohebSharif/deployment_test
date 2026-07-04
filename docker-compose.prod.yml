@@ -26,11 +26,9 @@ services:
       context: .
       dockerfile: nginx/Dockerfile
     ports:
+      # Host port 80 must be free — a host-installed nginx often sits there.
+      # Free it once with: sudo systemctl disable --now nginx
       - "80:80"
-      - "8080:80"
-      # Serving on host port 80 requires port 80 to be free first — a
-      # host-installed nginx often sits there showing the "Welcome to nginx"
-      # page. Free it once with: sudo systemctl disable --now nginx
     depends_on:
       - app
     restart: unless-stopped
