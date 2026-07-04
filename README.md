@@ -151,7 +151,7 @@ rsync the code to the instance and run
 One-time setup:
 
 1. **Instance**: append the deploy public key to `~/.ssh/authorized_keys`,
-   and create `~/rsvp-app/.env` with the RDS credentials (see
+   and create `~/deployment_test/.env` with the RDS credentials (see
    `.env.prod.example`). The security group must allow inbound 22 and 8080.
 2. **Repo secrets** (`gh secret set …`): `EC2_HOST` (public IP/DNS),
    `EC2_USER` (e.g. `ec2-user`), `EC2_SSH_KEY` (the private key).

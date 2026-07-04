@@ -6,8 +6,8 @@
 #   EC2_SSH_KEY  private key whose public half is in ~/.ssh/authorized_keys
 #                on the instance
 #
-# The instance keeps its own .env (RDS credentials) in ~/rsvp-app/ — the
-# deploy never touches it.
+# The instance keeps its own .env (RDS credentials) in ~/deployment_test/ —
+# the deploy never touches it.
 name: Deploy
 
 on:
@@ -54,13 +54,13 @@ jobs:
             --exclude '.git' \
             --exclude '.env' \
             -e "ssh -i ~/.ssh/deploy_key" \
-            ./ "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:~/rsvp-app/"
+            ./ "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:~/deployment_test/"
 
       - name: Rebuild and restart the stack
         run: |
           ssh -i ~/.ssh/deploy_key "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}" '
             set -e
-            cd ~/rsvp-app
+            cd ~/deployment_test
             docker compose -f docker-compose.prod.yml up -d --build
             docker image prune -f
           '
