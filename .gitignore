@@ -6,3 +6,5 @@ venv/
 .env.prod
 global-bundle.pem
 .nx/
+node_modules/
+frontend/dist/

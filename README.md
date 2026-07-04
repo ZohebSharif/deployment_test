@@ -5,8 +5,8 @@ create invites, share their links, collect Yes/Maybe/No responses, and manage
 everything from your dashboard. Log out and anyone can switch to their own
 name from the list.
 
-- **Backend:** FastAPI + psycopg2 (raw SQL)
-- **Frontend:** Server-rendered Jinja2 templates
+- **Frontend:** React + TypeScript (Vite), served as a static SPA by nginx
+- **Backend:** FastAPI JSON API + psycopg2 (raw SQL)
 - **Database:** PostgreSQL
 
 ## Project structure
@@ -15,40 +15,49 @@ name from the list.
 .
 ├── app/
 │   ├── __init__.py
-│   ├── main.py            # FastAPI app + all routes
-│   ├── db.py              # psycopg2 connection helper (reads env vars)
-│   └── templates/
-│       ├── base.html
-│       ├── home.html      # GET / (logged out)  account picker
-│       ├── dashboard.html # GET / (logged in)   your invites + create form
-│       ├── created.html   # shows shareable + dashboard links
-│       ├── rsvp.html      # GET /rsvp/{slug}   public RSVP form
-│       ├── thanks.html
-│       ├── responses.html # GET /events/{slug}/responses  dashboard
-│       └── not_found.html
+│   ├── main.py            # FastAPI JSON API (all /api/* routes)
+│   └── db.py              # psycopg2 connection helper (reads env vars)
+├── frontend/
+│   ├── index.html         # Vite entry shell
+│   └── src/
+│       ├── App.tsx        # router + layout
+│       ├── api.ts         # typed fetch client for /api/*
+│       ├── index.css      # design system
+│       └── pages/         # Home (picker + dashboard), Rsvp, Responses, NotFound
 ├── nginx/
-│   └── nginx.conf         # reverse proxy -> app:8000
+│   ├── Dockerfile         # builds frontend, serves it + proxies /api -> app:8000
+│   └── nginx.conf
 ├── Dockerfile             # builds the FastAPI app image
 ├── docker-compose.yml     # app + postgres + nginx
-├── schema.sql             # events + rsvps tables
+├── schema.sql             # accounts + events + rsvps tables
 ├── requirements.txt
 ├── .env.example
 └── README.md
 ```
 
-## Routes
+## Pages (React Router)
 
-| Method | Path                        | Purpose                                        |
-|--------|-----------------------------|------------------------------------------------|
-| GET    | `/`                         | Account picker (logged out) / dashboard (logged in) |
-| POST   | `/login`                    | Log in as a name, creating it if new           |
-| POST   | `/logout`                   | Clear the account cookie                       |
-| POST   | `/events`                   | Creates an invite owned by the current account |
-| POST   | `/events/{slug}/delete`    | Deletes an invite you own (and its RSVPs)      |
-| GET    | `/rsvp/{slug}`              | Public RSVP form                               |
-| POST   | `/rsvp/{slug}`             | Saves an RSVP                                  |
-| GET    | `/events/{slug}/responses` | Dashboard of all RSVPs for one invite          |
-| GET    | `/health`                   | Returns `200 OK` for health checks             |
+| Path                        | Purpose                                              |
+|-----------------------------|------------------------------------------------------|
+| `/`                         | Account picker (logged out) / dashboard (logged in)  |
+| `/rsvp/{slug}`              | Public RSVP form                                     |
+| `/events/{slug}/responses` | All RSVPs for one invite                             |
+
+## API routes
+
+| Method | Path                             | Purpose                                        |
+|--------|----------------------------------|------------------------------------------------|
+| GET    | `/api/me`                        | Current account (or null)                      |
+| GET    | `/api/accounts`                  | All account names, for the picker              |
+| POST   | `/api/login`                     | Log in as a name, creating it if new           |
+| POST   | `/api/logout`                    | Clear the account cookie                       |
+| GET    | `/api/events`                    | Your invites with response counts              |
+| POST   | `/api/events`                    | Create an invite owned by the current account  |
+| DELETE | `/api/events/{slug}`             | Delete an invite you own (and its RSVPs)       |
+| GET    | `/api/events/{slug}`             | Public event info for the RSVP page            |
+| POST   | `/api/events/{slug}/rsvps`       | Save an RSVP                                   |
+| GET    | `/api/events/{slug}/responses`  | All RSVPs + counts for an event                |
+| GET    | `/health`                        | Returns `200 OK` for health checks             |
 
 Phone is required only when the response is **Yes** or **Maybe**.
 
@@ -115,13 +124,22 @@ export $(grep -v '^#' .env | xargs)
 
 The app reads `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`.
 
-### 4. Run the server
+### 4. Run the API server
 
 ```bash
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-Open http://localhost:8000 to create an event.
+### 5. Run the frontend dev server
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Open the URL Vite prints (usually http://localhost:5173) — it proxies
+`/api` and `/health` to the API on :8000, with hot reload for the TSX.
 
 ## CI/CD (GitHub Actions → EC2)
 

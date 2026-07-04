@@ -33,9 +33,9 @@ services:
         condition: service_healthy
 
   nginx:
-    image: nginx:1.27-alpine
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    build:
+      context: .
+      dockerfile: nginx/Dockerfile
     ports:
       - "8080:80"
     depends_on:
