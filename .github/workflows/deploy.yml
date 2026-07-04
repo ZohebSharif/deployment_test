@@ -25,11 +25,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Build image
+      - name: Build API image
         run: docker build -t rsvp-app .
 
       - name: Smoke test — app imports cleanly
         run: docker run --rm rsvp-app python -c "from app import main"
+
+      - name: Build frontend + nginx image (type-checks the TSX)
+        run: docker build -f nginx/Dockerfile .
 
   deploy:
     needs: build

@@ -22,16 +22,15 @@ services:
     restart: unless-stopped
 
   nginx:
-    image: nginx:1.27-alpine
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    build:
+      context: .
+      dockerfile: nginx/Dockerfile
     ports:
+      - "80:80"
       - "8080:80"
-      # To also serve on plain http://<host>/ (no :8080), first free port 80
-      # on the instance — a host-installed nginx often sits there showing the
-      # "Welcome to nginx" page: sudo systemctl disable --now nginx
-      # Then uncomment:
-      # - "80:80"
+      # Serving on host port 80 requires port 80 to be free first — a
+      # host-installed nginx often sits there showing the "Welcome to nginx"
+      # page. Free it once with: sudo systemctl disable --now nginx
     depends_on:
       - app
     restart: unless-stopped
